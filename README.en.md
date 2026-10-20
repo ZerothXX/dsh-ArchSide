@@ -51,7 +51,7 @@ Complete the installation confirmations shown by DSH. If a restart is requested,
 
 1. Open **Plugins (插件)** in DSH's left sidebar.
 2. Click **Add plugin (添加插件)**, or use its dropdown and choose **Install third-party plugin (安装第三方插件)**.
-3. Enter the absolute path to an ArchSide `.tgz` package, a package download URL, or a **previously built local project directory**, then install.
+3. Enter https://github.com/ZerothXX/dsh-ArchSide, then install.
 4. Follow the page's instructions to finish installation and enable the plugin. Save your work and restart DSH if requested.
 
 <details>
@@ -61,7 +61,6 @@ Complete the installation confirmations shown by DSH. If a restart is requested,
 
 </details>
 
-The page also accepts npm package names and Git URLs. For GitHub source, let the Agent build it or generate a package using the steps below. Installing by npm package name requires publishing to npm first. When a Release package is available, its download URL can be used directly.
 
 ### Option 3: Install manually from source
 
@@ -161,7 +160,7 @@ npm.cmd run build
 npm.cmd run dev
 ```
 
-Open <http://127.0.0.1:4173>. The preview reads the current directory's `architecture.md`; its left-hand draft area is not connected to a model. Validate actual Agent collaboration inside DSH. Set `ARCHSIDE_PREVIEW_WORKSPACE` to use another workspace.
+Open <http://127.0.0.1:4173>(This address points to the local machine running the preview service and is not an online demo address. Users who have only installed and used the plugin can skip this section.). The preview reads the current directory's `architecture.md`; its left-hand draft area is not connected to a model. Validate actual Agent collaboration inside DSH. Set `ARCHSIDE_PREVIEW_WORKSPACE` to use another workspace.
 
 ```powershell
 npm.cmd run check
