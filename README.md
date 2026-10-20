@@ -47,7 +47,23 @@ ArchSide 是面向 **DeepSeek Harness** 的通用项目架构侧栏插件。左�
 
 按 DSH 的提示完成安装确认；如果提示需要重启，保存任务后重新打开 DSH。
 
-### 方式二：从源码手动安装
+### 方式二：在桌面端插件页安装
+
+1. 打开 DSH 左侧 **「插件」** 页面。
+2. 点击右上角 **「添加插件」**，或点击旁边的下拉箭头，选择 **「安装第三方插件」**。
+3. 输入 ArchSide 的 `.tgz` 安装包绝对路径、安装包下载地址，或**已构建的本地项目目录**，点击安装。
+4. 按页面提示完成安装和启用；需要重启时，保存任务后重启 DSH。
+
+<details>
+<summary>查看桌面端安装入口</summary>
+
+![DSH 插件页：添加插件 → 安装第三方插件](pictures/install-plugin.png)
+
+</details>
+
+插件页也支持 npm 包名和 Git 地址。从 GitHub 源码安装可交给 Agent 完成构建，或先按下方方式生成安装包。使用 npm 包名需要先发布到 npm；仓库提供 Release 安装包后，可直接使用其下载地址。
+
+### 方式三：从源码手动安装
 
 1. 下载或克隆本仓库，在根目录打开 PowerShell。
 2. 保存 DSH 中的任务，从应用菜单或托盘**完全退出 DSH**。
@@ -145,7 +161,7 @@ npm.cmd run build
 npm.cmd run dev
 ```
 
-打开 <http://127.0.0.1:4173>。（此地址指向运行预览服务的本机，并非在线演示地址。仅安装和使用插件的用户可跳过本节。）预览读取当前目录的 `architecture.md`，左侧为未连接模型的草稿测试区。真实 Agent 协作在 DSH 内验证。可通过 `ARCHSIDE_PREVIEW_WORKSPACE` 指定其他工作区。
+打开 <http://127.0.0.1:4173>。预览读取当前目录的 `architecture.md`，左侧为未连接模型的草稿测试区。真实 Agent 协作在 DSH 内验证。可通过 `ARCHSIDE_PREVIEW_WORKSPACE` 指定其他工作区。
 
 ```powershell
 npm.cmd run check
