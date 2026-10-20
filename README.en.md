@@ -51,7 +51,7 @@ Complete the installation confirmations shown by DSH. If a restart is requested,
 
 1. Open **Plugins (插件)** in DSH's left sidebar.
 2. Click **Add plugin (添加插件)**, or use its dropdown and choose **Install third-party plugin (安装第三方插件)**.
-3. Enter https://github.com/ZerothXX/dsh-ArchSide, then install.
+3. Enter "https://github.com/ZerothXX/dsh-ArchSide" , then install.
 4. Follow the page's instructions to finish installation and enable the plugin. Save your work and restart DSH if requested.
 
 <details>
