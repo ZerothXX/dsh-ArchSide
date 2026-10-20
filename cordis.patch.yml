@@ -1,0 +1,4 @@
+- insert:
+    - id: archside
+      name: dsh-plugin-archside
+      config: {}
