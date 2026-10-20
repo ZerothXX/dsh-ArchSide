@@ -160,7 +160,7 @@ npm.cmd run build
 npm.cmd run dev
 ```
 
-Open <http://127.0.0.1:4173>. The preview reads the current directory's `architecture.md`; its left-hand draft area is not connected to a model. Validate actual Agent collaboration inside DSH. Set `ARCHSIDE_PREVIEW_WORKSPACE` to use another workspace.
+Open <http://127.0.0.1:4173>. The preview reads the current directory's `architecture.md`; its left-hand draft area is not connected to a model. Validate actual Agent collaboration inside DSH. Set `ARCHSIDE_PREVIEW_WORKSPACE` to use another workspace.This address points to the local machine running the preview service and is not an online demo address. Users who have only installed and used the plugin can skip this section.
 
 ```powershell
 npm.cmd run check
