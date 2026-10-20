@@ -47,23 +47,7 @@ Switch to **Creator mode (创造模式)** in DSH and give the Agent this project
 
 Complete the installation confirmations shown by DSH. If a restart is requested, save your work and reopen DSH.
 
-### Option 2: Use the desktop Plugins page
-
-1. Open **Plugins (插件)** in DSH's left sidebar.
-2. Click **Add plugin (添加插件)**, or use its dropdown and choose **Install third-party plugin (安装第三方插件)**.
-3. Enter the absolute path to an ArchSide `.tgz` package, a package download URL, or a **previously built local project directory**, then install.
-4. Follow the page's instructions to finish installation and enable the plugin. Save your work and restart DSH if requested.
-
-<details>
-<summary>View the desktop installation entry</summary>
-
-![DSH Plugins page: Add plugin → Install third-party plugin](pictures/install-plugin.png)
-
-</details>
-
-The page also accepts npm package names and Git URLs. For GitHub source, let the Agent build it or generate a package using the steps below. Installing by npm package name requires publishing to npm first. When a Release package is available, its download URL can be used directly.
-
-### Option 3: Install manually from source
+### Option 2: Install manually from source
 
 1. Download or clone this repository and open PowerShell in its root directory.
 2. Save ongoing DSH work and **fully quit DSH**, including the tray process.
