@@ -51,7 +51,7 @@ ArchSide 是面向 **DeepSeek Harness** 的通用项目架构侧栏插件。左�
 
 1. 打开 DSH 左侧 **「插件」** 页面。
 2. 点击右上角 **「添加插件」**，或点击旁边的下拉箭头，选择 **「安装第三方插件」**。
-3. 输入 https://github.com/ZerothXX/dsh-ArchSide，点击安装。
+3. 输入 "https://github.com/ZerothXX/dsh-ArchSide" ，点击安装。
 4. 按页面提示完成安装和启用；需要重启时，保存任务后重启 DSH。
 
 <details>
