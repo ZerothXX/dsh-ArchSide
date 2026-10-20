@@ -1,0 +1,12 @@
+import { build } from 'esbuild';
+import { mkdir, readFile, writeFile, copyFile } from 'node:fs/promises';
+await mkdir('dist', { recursive: true });
+await build({ entryPoints: ['src/host/index.ts'], outfile: 'dist/host.js', bundle: true, platform: 'node', format: 'esm', target: 'node22', sourcemap: true, packages: 'external' });
+const worker = await build({ entryPoints: ['src/client/projection-worker.ts'], bundle: true, platform: 'browser', format: 'iife', target: 'es2022', write: false, minify: true });
+const define = { __ARCHSIDE_WORKER_SOURCE__: JSON.stringify(worker.outputFiles[0].text) };
+const result = await build({ entryPoints: ['src/client/plugin.tsx'], bundle: true, platform: 'browser', format: 'cjs', target: 'es2022', write: false, define, external: ['react', 'react/jsx-runtime', 'react-dom'], loader: { '.css': 'text' } });
+const compiled = result.outputFiles[0].text;
+await writeFile('dist/client.js', `window.__ModuleLoader__.load({id:"dsh-plugin-archside",factory(require){var module={exports:{}};var exports=module.exports;\n${compiled}\nreturn module.exports;}});\n`);
+await build({ entryPoints: ['src/preview/main.tsx'], outfile: 'dist/preview.js', bundle: true, platform: 'browser', format: 'esm', target: 'es2022', define, loader: { '.css': 'text' } });
+await copyFile('src/preview/index.html', 'dist/index.html');
+console.log('Built host plugin, DSH client module, and local preview.');

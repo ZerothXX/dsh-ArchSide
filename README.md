@@ -8,7 +8,7 @@
 
 ArchSide 是面向 **DeepSeek Harness** 的通用项目架构侧栏插件。左侧保留原生 Agent 对话，右侧展示可逐层探索的架构图；以一个 `architecture.md` 连接项目需求、结构设计和程序实现。
 
-当前版本 **0.1.4**，适配 **DSH Desktop 0.2.1-rc.2**。支持已有代码的项目，也支持尚未实现的需求设计，不绑定业务类型或编程语言。
+当前版本 **0.1.5**，适配 **DSH Desktop 0.2.1-rc.2**。支持已有代码的项目，也支持尚未实现的需求设计，不绑定业务类型或编程语言。
 
 ## 效果展示
 
@@ -22,7 +22,8 @@ ArchSide 是面向 **DeepSeek Harness** 的通用项目架构侧栏插件。左�
 - **引用节点协作**：通过 `>` 或右键选择「选中 @」，将节点加入原生输入框；支持多个引用，由用户补充指令后发送。
 - **从需求或代码起步**：没有 MD 时，Agent 可扫描代码生成初稿；没有程序时，也可从需求设计架构并围绕节点讨论。
 - **架构与 MD 对应**：标题表达章、节、小节；稳定 ID 维护关系，编号或名称调整不会靠名称重新连线。
-- **自由布局、完整关系**：同章节点尽量相近，颜色区分类别，不设章节外框。细圆角折线避让卡片，原始关系逐条保留；点线表示层级归属。
+- **自由布局、完整关系**：同章节点尽量相近，颜色区分类别，不设章节外框。细圆角折线避让卡片，原始关系逐条保留；点线只表示父子「组成」，不额外连接同章节点。
+- **流畅移动**：拖动时按动画帧更新节点及相连线条，松手后在后台计算完整布局和避障连线；平移、缩放及未变化的轮询复用现有图形。
 - **操作与定位**：拖动节点、平移、缩放、适应画布、全部展开/收起；搜索节点、文件或说明文字，并定位高亮。
 - **任务完成后同步**：任务期间保留图并显示状态，完成后刷新；外部文件变化提示检查同步，发布提供版本冲突检查和历史备份。
 
@@ -88,7 +89,7 @@ npm.cmd run install:desktop -- -DesktopDirectory 'C:\Path\To\DeepSeek Harness'
 
 ```powershell
 npm.cmd run pack:plugin
-& 'C:\Path\To\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd' plugin --profile desktop add 'C:\Path\To\ArchSide\dsh-plugin-archside-0.1.4.tgz'
+& 'C:\Path\To\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd' plugin --profile desktop add 'C:\Path\To\ArchSide\dsh-plugin-archside-0.1.5.tgz'
 ```
 
 移除时，完全退出 DSH 后执行：
@@ -148,7 +149,7 @@ npm.cmd run pack:plugin
 | `.archside/layout.json` | 本地节点位置与视口，独立于架构内容 |
 | `.archside/history/` | 插件发布前的架构历史备份 |
 
-原始业务关系不会因整理画面而减少；折叠内部关系显示回环，隐藏章的投影标注「章级关系」。无箭头浅色点线表示层级归属，不写入 MD 业务关系。复杂图仍可能有交叉；外部代码变化需 Agent 核查后同步，多窗口布局采用最后保存。
+原始业务关系不会因整理画面而减少；折叠内部关系显示回环，隐藏章的投影标注「章级关系」。无箭头浅色点线只表示父子「组成」，不生成「同章」连线，也不写入 MD 业务关系。复杂图仍可能有交叉；外部代码变化需 Agent 核查后同步，多窗口布局采用最后保存。
 
 项目内图片支持 PNG/JPEG/WebP/GIF，大小限制为 4 MB；不执行 Markdown 内的 HTML。节点引用映射保存在当前运行会话中，重启后历史对话中的旧编号需重新选择节点或用稳定 ID 核对。
 
@@ -160,15 +161,16 @@ npm.cmd run build
 npm.cmd run dev
 ```
 
-打开 <http://127.0.0.1:4173>。预览读取当前目录的 `architecture.md`，左侧为未连接模型的草稿测试区。真实 Agent 协作在 DSH 内验证。可通过 `ARCHSIDE_PREVIEW_WORKSPACE` 指定其他工作区。此地址指向运行预览服务的本机，并非在线演示地址。仅安装和使用插件的用户可跳过本节。
+打开 <http://127.0.0.1:4173>。预览读取当前目录的 `architecture.md`，左侧为未连接模型的草稿测试区。真实 Agent 协作在 DSH 内验证。可通过 `ARCHSIDE_PREVIEW_WORKSPACE` 指定其他工作区。
 
 ```powershell
 npm.cmd run check
 npm.cmd run test:ui
+npm.cmd run test:performance
 npm.cmd run pack:plugin
 ```
 
-`check` 包含类型检查、自动测试和构建；界面测试及打包入口验证使用本机 **Google Chrome**。界面测试在临时工作区运行，截图输出到 `artifacts/`。当前有 30 项自动测试，覆盖 MD、稳定关系、布局、连线、存储及 DSH 适配。
+`check` 包含类型检查、自动测试和构建；界面测试及打包入口验证使用本机 **Google Chrome**。界面测试在临时工作区运行，截图输出到 `artifacts/`。当前有 31 项自动测试，覆盖 MD、稳定关系、布局、连线、拖动预览、存储及 DSH 适配。`test:performance` 使用 120 个节点和 134 条业务关系，检查后台计算、拖动重算次数、平移缩放复用及交互帧耗时。
 
 | 目录 | 职责 |
 | --- | --- |

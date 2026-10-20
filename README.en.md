@@ -8,7 +8,7 @@
 
 ArchSide is a general-purpose project architecture sidebar plugin for **DeepSeek Harness**. It keeps native Agent chat on the left and an explorable architecture graph on the right. One `architecture.md` connects requirements, structural design, and implementation.
 
-Version **0.1.4** targets **DSH Desktop 0.2.1-rc.2**. It supports existing codebases and projects still at the design stage, without depending on a particular domain or programming language.
+Version **0.1.5** targets **DSH Desktop 0.2.1-rc.2**. It supports existing codebases and projects still at the design stage, without depending on a particular domain or programming language.
 
 ## Preview
 
@@ -22,7 +22,8 @@ Version **0.1.4** targets **DSH Desktop 0.2.1-rc.2**. It supports existing codeb
 - **Reference nodes in chat:** use `>` or the context menu to select `@`. Add one or more references to the native composer, write your instruction, then send.
 - **Start from code or requirements:** ask the Agent to scan a codebase and draft the MD, or design an architecture before implementation exists.
 - **Keep the graph and MD connected:** headings define chapters, sections, and subsections. Stable IDs preserve relationships when names or display numbers change.
-- **Arrange freely, preserve relationships:** nodes from the same chapter stay near each other, using shared colors without enclosing boxes. Thin rounded routes avoid cards; original relationships remain individually visible. Dotted lines indicate hierarchy.
+- **Arrange freely, preserve relationships:** nodes from the same chapter stay near each other, using shared colors without enclosing boxes. Thin rounded routes avoid cards; original relationships remain individually visible. Dotted lines show parent-child composition only; sharing a chapter adds no extra connection.
+- **Move smoothly:** animation frames update dragged nodes and connected endpoints. Full layout and obstacle routing run in a background worker after release. Panning, zooming, and unchanged polls reuse existing geometry.
 - **Navigate and inspect:** drag nodes, pan, zoom, fit the canvas, expand/collapse explanations, and search node names, files, or descriptive text.
 - **Refresh after tasks finish:** preserve the graph during Agent work. External file changes prompt a sync review; publishing checks revisions and saves history.
 
@@ -88,7 +89,7 @@ An existing ArchSide-format `architecture.md` loads automatically. Otherwise, ch
 
 ```powershell
 npm.cmd run pack:plugin
-& 'C:\Path\To\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd' plugin --profile desktop add 'C:\Path\To\ArchSide\dsh-plugin-archside-0.1.4.tgz'
+& 'C:\Path\To\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd' plugin --profile desktop add 'C:\Path\To\ArchSide\dsh-plugin-archside-0.1.5.tgz'
 ```
 
 To remove the plugin, fully quit DSH first, then run:
@@ -148,7 +149,7 @@ Each edge needs a unique `id`; `kind` supports `data`, `dependency`, and `option
 | `.archside/layout.json` | Local node positions and viewport, separate from architecture content |
 | `.archside/history/` | Architecture backups created before plugin publishing |
 
-Original relationships are preserved individually. Relationships collapsed inside one visible node appear as loops; hidden-chapter projections are labeled as chapter-level relationships. Pale dotted lines without arrowheads indicate hierarchy and do not add business relationships to the MD. Complex graphs may still contain crossings. External code changes need Agent review before synchronization; layout saves from multiple windows use the last write.
+Original relationships are preserved individually. Relationships collapsed inside one visible node appear as loops; hidden-chapter projections are labeled as chapter-level relationships. Pale dotted lines without arrowheads show parent-child composition only. No same-chapter links are generated, and these structural links are not written to the MD. Complex graphs may still contain crossings. External code changes need Agent review before synchronization; layout saves from multiple windows use the last write.
 
 Project images support PNG/JPEG/WebP/GIF up to 4 MB; Markdown HTML is not executed. Node reference mappings live in the current running session. After a restart, reselect nodes or use stable IDs to verify old display numbers in chat history.
 
@@ -160,15 +161,16 @@ npm.cmd run build
 npm.cmd run dev
 ```
 
-Open <http://127.0.0.1:4173>. The preview reads the current directory's `architecture.md`; its left-hand draft area is not connected to a model. Validate actual Agent collaboration inside DSH. Set `ARCHSIDE_PREVIEW_WORKSPACE` to use another workspace.This address points to the local machine running the preview service and is not an online demo address. Users who have only installed and used the plugin can skip this section.
+Open <http://127.0.0.1:4173>. The preview reads the current directory's `architecture.md`; its left-hand draft area is not connected to a model. Validate actual Agent collaboration inside DSH. Set `ARCHSIDE_PREVIEW_WORKSPACE` to use another workspace.
 
 ```powershell
 npm.cmd run check
 npm.cmd run test:ui
+npm.cmd run test:performance
 npm.cmd run pack:plugin
 ```
 
-`check` runs type checking, automated tests, and the build. UI tests and package-entry validation use locally installed **Google Chrome**. UI tests use a temporary workspace and save screenshots to `artifacts/`. There are currently 30 automated tests covering MD, stable relationships, layout, routing, storage, and DSH integration.
+`check` runs type checking, automated tests, and the build. UI tests and package-entry validation use locally installed **Google Chrome**. UI tests use a temporary workspace and save screenshots to `artifacts/`. There are currently 31 automated tests covering MD, stable relationships, layout, routing, drag previews, storage, and DSH integration. `test:performance` uses 120 nodes and 134 business relationships to check background computation, routing job counts during dragging, geometry reuse when panning/zooming, and interaction frame times.
 
 | Directory | Responsibility |
 | --- | --- |
