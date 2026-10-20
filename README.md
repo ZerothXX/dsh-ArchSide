@@ -161,7 +161,7 @@ npm.cmd run build
 npm.cmd run dev
 ```
 
-打开 <http://127.0.0.1:4173>。预览读取当前目录的 `architecture.md`，左侧为未连接模型的草稿测试区。真实 Agent 协作在 DSH 内验证。可通过 `ARCHSIDE_PREVIEW_WORKSPACE` 指定其他工作区。
+打开 <http://127.0.0.1:4173>。（此地址指向运行预览服务的本机，并非在线演示地址。仅安装和使用插件的用户可跳过本节。）预览读取当前目录的 `architecture.md`，左侧为未连接模型的草稿测试区。真实 Agent 协作在 DSH 内验证。可通过 `ARCHSIDE_PREVIEW_WORKSPACE` 指定其他工作区。
 
 ```powershell
 npm.cmd run check
