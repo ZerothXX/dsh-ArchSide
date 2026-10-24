@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-archside",
-  "version": "0.1.5",
+  "version": "0.1.7",
   "description": "Architecture Markdown, a three-level graph and node-scoped Agent collaboration for DeepSeek Harness.",
   "type": "module",
   "main": "./dist/host.js",
@@ -23,7 +23,7 @@
   ],
   "engines": {
     "node": ">=22",
-    "dsh": "0.2.1-rc.2"
+    "dsh": "*"
   },
   "dsh": {
     "bundle": {
@@ -43,6 +43,7 @@
     "dev": "node --import tsx scripts/preview.mjs",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.ts",
+    "test:compatibility": "node scripts/test-compatibility.mjs",
     "test:ui": "node scripts/test-ui.mjs",
     "test:performance": "node scripts/test-performance.mjs",
     "verify:package": "node scripts/verify-package.mjs",
@@ -56,12 +57,15 @@
     "zod": "4.6.7"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "~4.0.5",
-    "@deepseek-ai/dsh-tools": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-typert-protocol": "0.2.1-rc.2"
+    "@deepseek-ai/cordis": "*",
+    "@deepseek-ai/dsh-tools": "*",
+    "@deepseek-ai/dsh-typert-protocol": "*"
   },
   "devDependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
     "@deepseek-ai/dsh-api-gateway": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-tools": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-typert-protocol": "0.2.1-rc.2",
     "@deepseek-ai/dsh-typert-registry": "0.2.1-rc.2",
     "@types/node": "^24.0.0",
     "@types/react": "^18.3.0",
@@ -70,6 +74,7 @@
     "playwright": "^1.56.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "semver": "^7.7.2",
     "tsx": "^4.20.0",
     "typescript": "^5.9.0"
   },

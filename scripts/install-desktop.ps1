@@ -10,9 +10,6 @@ if (!(Test-Path -LiteralPath $desktopCli) -or !(Test-Path -LiteralPath $desktopE
     throw 'DSH desktop runtime not found. Pass -DesktopDirectory with the desktop installation directory.'
 }
 $desktopVersion = (Get-Item -LiteralPath $desktopExe).VersionInfo.FileVersion
-if ($desktopVersion -ne '0.2.1-rc.2') {
-    throw "This adapter targets DSH 0.2.1-rc.2; installed version is $desktopVersion. Verify API compatibility before installation."
-}
 $running = @(Get-Process -Name 'DeepSeek Harness' -ErrorAction SilentlyContinue)
 Write-Host "Desktop: $DesktopDirectory ($desktopVersion)"
 Write-Host "Profile: desktop; running processes: $($running.Count)"

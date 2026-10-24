@@ -9,6 +9,15 @@ import Gateway from '@deepseek-ai/dsh-api-gateway';
 import * as ClientGateway from '@deepseek-ai/dsh-api-gateway/client';
 import { ARCHSIDE_REMOTE } from '../src/core/remote';
 import * as plugin from '../src/host/index';
+import { DshCapabilityError } from '../src/compat/dsh';
+
+test('host detects missing capabilities before registering tools or lifecycle effects', () => {
+  let effects = 0;
+  assert.throws(() => plugin.apply({
+    effect() { effects++; }, plugin() {}, on() {}, tools: {},
+  } as unknown as Context), DshCapabilityError);
+  assert.equal(effects, 0);
+});
 
 test('real DSH Gateway connects mounted client namespace to host tools and workspace', async () => {
   const workspace = await mkdtemp(join(tmpdir(), 'archside-host-'));

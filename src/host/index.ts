@@ -1,12 +1,13 @@
-import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol';
-import { defineTool } from '@deepseek-ai/dsh-tools';
+import * as DshProtocol from '@deepseek-ai/dsh-typert-protocol';
+import * as DshTools from '@deepseek-ai/dsh-tools';
 import type { Context } from '@deepseek-ai/cordis';
 import { ArchitectureRepository } from './repository';
 import { nodeContext } from '../core/model';
 import { FORMAT_GUIDE, AGENT_GUIDE } from './instructions';
 import { ARCHSIDE_REMOTE } from '../core/remote';
+import { requireDshMethods } from '../compat/dsh';
 
-// DSH runtime services are injected by Cordis; only this version adapter uses dynamic faces.
+// DSH runtime services are injected by Cordis and checked by capability.
 type DshContext = Context & Record<string, any>;
 interface SessionRequest { sessionId: string }
 export const name = 'archside';
@@ -14,6 +15,15 @@ export const inject = ['tools', 'sessions', 'agents', 'workingDirectory', 'syste
 
 export function apply(context: Context) {
   const ctx = context as DshContext;
+  requireDshMethods(DshProtocol, ['Remote', 'TypertRemoteService'], '远程协议接口');
+  requireDshMethods(DshTools, ['defineTool'], 'Agent 工具定义接口');
+  requireDshMethods(ctx, ['effect', 'plugin', 'on'], '插件生命周期接口');
+  for (const [service, methods] of Object.entries({
+    tools: ['register'], sessions: ['get'], agents: ['get'],
+    workingDirectory: ['ensure'], systemPrompt: ['section'], typert: ['register'],
+  })) requireDshMethods(ctx[service], methods, `宿主服务 ${service}`);
+  const { Remote, TypertRemoteService } = DshProtocol;
+  const { defineTool } = DshTools;
   const repository = new ArchitectureRepository();
   const references = new Map<string, Map<string, string>>();
   ctx.effect(() => () => { repository.close(); references.clear(); });

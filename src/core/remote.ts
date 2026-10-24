@@ -1,5 +1,7 @@
-import { createTypertRemoteInfo, type TypertRemoteMethodSpec } from '@deepseek-ai/dsh-typert-protocol';
+import * as DshProtocol from '@deepseek-ai/dsh-typert-protocol';
+import type { TypertRemoteMethodSpec } from '@deepseek-ai/dsh-typert-protocol';
 import { z } from 'zod';
+import { requireDshMethods } from '../compat/dsh';
 
 // The Client must explicitly mount its namespace; injecting remote.archside alone
 // would leave the plugin waiting forever for a service nobody provides.
@@ -19,4 +21,5 @@ for (const [method, schema] of Object.entries(requests)) {
     result: { mode: 'strict', typeSymbol: `dsh-plugin-archside#${method}:result`, create: () => z.unknown() },
   };
 }
-export const ARCHSIDE_REMOTE = createTypertRemoteInfo({ package: 'dsh-plugin-archside', methods }, z);
+requireDshMethods({ createTypertRemoteInfo: DshProtocol.createTypertRemoteInfo }, ['createTypertRemoteInfo'], '远程协议描述接口');
+export const ARCHSIDE_REMOTE = DshProtocol.createTypertRemoteInfo({ package: 'dsh-plugin-archside', methods }, z);

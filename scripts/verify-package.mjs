@@ -22,7 +22,7 @@ try {
   await page.addScriptTag({ content: await readFile('dist/client.js', 'utf8') });
   const result = await page.evaluate(async () => {
     const client = window.archsidePlugin;
-    if (typeof client.apply !== 'function' || client.inject.includes('remote.archside')) throw new Error('Client entry or Remote mount dependency is invalid');
+    if (typeof client.apply !== 'function' || client.inject.includes('remote.archside') || client.inject.includes('conversation')) throw new Error('Client entry or optional dependency is invalid');
     const slots = [], types = [], disposers = []; let mounted = false, snapshotReads = 0, jobs = 0;
     const NativeWorker = window.Worker;
     window.Worker = class extends NativeWorker { postMessage(...args) { jobs++; return super.postMessage(...args); } };
@@ -43,6 +43,7 @@ try {
       },
       effect(fn) { const dispose = fn(); if (typeof dispose === 'function') disposers.push(dispose); return dispose; },
       sidebarRightTabs: { register(spec) { types.push(spec); return () => {}; } },
+      sidebarRight: { openTabIn() {} },
       slots: { inject(_name, fn) { return fn(); }, register(spec, component) { slots.push({ spec, component }); return () => {}; } },
     });
     const registered = mounted && types[0]?.kind === 'archside'

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { sessionApi } from '../src/client/dsh-api';
+import { sessionApi, unwrap } from '../src/client/dsh-api';
+import { DshCapabilityError } from '../src/compat/dsh';
 
 test('DSH adapter appends multiple references without sending or replacing the existing draft', async () => {
   let draft = '请分析'; let draftRev = 7; let focused = 0;
@@ -31,4 +32,25 @@ test('failed or stale references report an error without a fallback draft overwr
   await assert.rejects(api.reference('missing'), /节点已移除/);
   await assert.rejects(api.reference('present'), /输入框内容已变化/);
   assert.equal(focused, false);
+});
+
+test('changed composer capabilities report compatibility errors before any draft write', async () => {
+  let writes = 0;
+  for (const conversation of [undefined, { input: {} }, { input: { shell: () => undefined } },
+    { input: { shell: () => ({ snapshot: { draft: null, draftRev: 1 }, insertText: () => { writes++; }, focus() {} }) } }]) {
+    const api = sessionApi({ conversation }, 'session-a');
+    await assert.rejects(api.insertPrompt('reference'), /DSH.*输入框接口/);
+  }
+  assert.equal(writes, 0);
+});
+
+test('missing remote methods affect only that operation and malformed results report a capability error', async () => {
+  const snap = { revision: 'test' };
+  const api = sessionApi({ remote: { archside: {
+    snapshot: async () => ({ ok: true, value: snap }),
+  } } }, 'session-a');
+  await assert.rejects(api.asset('image.png'), DshCapabilityError);
+  assert.deepEqual(await api.snapshot(), snap);
+  await assert.rejects(unwrap(Promise.resolve(undefined)), DshCapabilityError);
+  await assert.rejects(unwrap(Promise.resolve({ value: 'unexpected' })), DshCapabilityError);
 });

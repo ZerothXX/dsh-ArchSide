@@ -135,9 +135,11 @@
 
 ### 4.2 DSH 原生接入
 
-<!-- archside: {"id":"dsh-integration","status":"implemented","files":["src/client/plugin.tsx","cordis.patch.yml"],"summary":"注册 DSH 右侧架构标签页、对话头部入口和受会话访问控制约束的远程服务。"} -->
+<!-- archside: {"id":"dsh-integration","status":"implemented","files":["src/compat/dsh.ts","src/client/plugin.tsx","src/client/dsh-api.ts","src/core/remote.ts","src/host/index.ts","cordis.patch.yml","package.json","scripts/install-desktop.ps1","scripts/test-compatibility.mjs","tests/compatibility.test.ts"],"summary":"注册 DSH 侧栏与远程服务；基于实际接口能力兼容，不按宿主版本号限制加载，验证记录维护在 README。"} -->
 
 插件使用 Cordis 生命周期管理资源，使用 DSH 自带的 React 与对话输入服务。最终交互在 DSH 桌面端验证。
+
+宿主版本声明与 peer 依赖均使用 `*`，安装脚本只显示检测到的版本，不按版本范围拦截。底层兼容层统一检查核心服务、远程协议、侧栏插槽和输入框能力，不依赖宿主版本字符串。输入框服务按操作动态获取，缺失时只影响草稿引用，架构阅读仍可使用；缺少个别远程方法时只拒绝相关操作。开发 SDK 固定用于可重复构建；隔离多版本测试验证真实网关、类型、构建和浏览器入口，已验证的宿主版本仅在 README 中记录。公开接口被删除或语义发生变化时仍需更新兼容层。
 
 ```archside
 {

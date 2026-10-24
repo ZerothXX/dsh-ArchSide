@@ -3,15 +3,21 @@ import { ArchitecturePanel } from './ArchitecturePanel';
 import { Icon } from './icons';
 import { ARCHSIDE_REMOTE } from '../core/remote';
 import { sessionApi, unwrap } from './dsh-api';
+import { requireDshMethods } from '../compat/dsh';
 
-export const inject = ['slots', 'locale', 'sidebarRightTabs', 'sidebarRight', 'conversation', 'remote'];
+export const inject = ['slots', 'locale', 'sidebarRightTabs', 'sidebarRight', 'remote'];
 export async function apply(ctx: any) {
+  requireDshMethods(ctx, ['effect', 'inject'], '插件生命周期接口');
+  requireDshMethods(ctx.remote, ['$mount'], '远程服务挂载接口');
   const unmountRemote = await ctx.remote.$mount(ARCHSIDE_REMOTE);
   ctx.effect(() => unmountRemote, 'archside.remote');
   ctx.inject(['remote.archside', ...inject], registerUi);
 }
 
 function registerUi(ctx: any) {
+  requireDshMethods(ctx.sidebarRightTabs, ['register'], '侧栏标签注册接口');
+  requireDshMethods(ctx.sidebarRight, ['openTabIn'], '侧栏打开接口');
+  requireDshMethods(ctx.slots, ['inject', 'register'], '界面插槽接口');
   function Body({ sessionId }: { sessionId: string }) {
     const api = useMemo(() => sessionApi(ctx, sessionId), [sessionId]);
     return <ArchitecturePanel key={sessionId} api={api} sessionKey={sessionId}/>;
