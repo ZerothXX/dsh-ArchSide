@@ -47,8 +47,8 @@ var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "
 var __privateMethod = (obj, member, method) => (__accessCheck(obj, member, "access private method"), method);
 
 // src/host/index.ts
-import { Remote, TypertRemoteService } from "@deepseek-ai/dsh-typert-protocol";
-import { defineTool } from "@deepseek-ai/dsh-tools";
+import * as DshProtocol2 from "@deepseek-ai/dsh-typert-protocol";
+import * as DshTools from "@deepseek-ai/dsh-tools";
 
 // src/host/repository.ts
 import { promises as fs, watch } from "node:fs";
@@ -504,8 +504,23 @@ Every final chat reply for an ArchSide task must explicitly state actual scope: 
 ${FORMAT_GUIDE}`;
 
 // src/core/remote.ts
-import { createTypertRemoteInfo } from "@deepseek-ai/dsh-typert-protocol";
+import * as DshProtocol from "@deepseek-ai/dsh-typert-protocol";
 import { z } from "zod";
+
+// src/compat/dsh.ts
+var DshCapabilityError = class extends Error {
+  constructor(capability) {
+    super(`ArchSide\uFF1A\u5F53\u524D DSH \u7F3A\u5C11\u53EF\u7528\u7684${capability}\uFF0C\u8BF7\u66F4\u65B0\u63D2\u4EF6\u4EE5\u9002\u914D\u8BE5\u63A5\u53E3`);
+    this.capability = capability;
+    this.name = "DshCapabilityError";
+  }
+  code = "ARCHSIDE_DSH_CAPABILITY_MISSING";
+};
+function requireDshMethods(target, methods2, capability) {
+  if (methods2.some((method) => typeof target?.[method] !== "function")) throw new DshCapabilityError(capability);
+}
+
+// src/core/remote.ts
 var session = z.object({ sessionId: z.string().min(1) });
 var requests = {
   snapshot: session,
@@ -523,7 +538,8 @@ for (const [method, schema] of Object.entries(requests)) {
     result: { mode: "strict", typeSymbol: `dsh-plugin-archside#${method}:result`, create: () => z.unknown() }
   };
 }
-var ARCHSIDE_REMOTE = createTypertRemoteInfo({ package: "dsh-plugin-archside", methods }, z);
+requireDshMethods({ createTypertRemoteInfo: DshProtocol.createTypertRemoteInfo }, ["createTypertRemoteInfo"], "\u8FDC\u7A0B\u534F\u8BAE\u63CF\u8FF0\u63A5\u53E3");
+var ARCHSIDE_REMOTE = DshProtocol.createTypertRemoteInfo({ package: "dsh-plugin-archside", methods }, z);
 
 // src/host/index.ts
 var name = "archside";
@@ -531,6 +547,19 @@ var inject = ["tools", "sessions", "agents", "workingDirectory", "systemPrompt",
 function apply(context) {
   var _asset_dec, _reference_dec, _saveLayout_dec, _snapshot_dec, _a, _init;
   const ctx = context;
+  requireDshMethods(DshProtocol2, ["Remote", "TypertRemoteService"], "\u8FDC\u7A0B\u534F\u8BAE\u63A5\u53E3");
+  requireDshMethods(DshTools, ["defineTool"], "Agent \u5DE5\u5177\u5B9A\u4E49\u63A5\u53E3");
+  requireDshMethods(ctx, ["effect", "plugin", "on"], "\u63D2\u4EF6\u751F\u547D\u5468\u671F\u63A5\u53E3");
+  for (const [service, methods2] of Object.entries({
+    tools: ["register"],
+    sessions: ["get"],
+    agents: ["get"],
+    workingDirectory: ["ensure"],
+    systemPrompt: ["section"],
+    typert: ["register"]
+  })) requireDshMethods(ctx[service], methods2, `\u5BBF\u4E3B\u670D\u52A1 ${service}`);
+  const { Remote, TypertRemoteService } = DshProtocol2;
+  const { defineTool } = DshTools;
   const repository = new ArchitectureRepository();
   const references = /* @__PURE__ */ new Map();
   ctx.effect(() => () => {

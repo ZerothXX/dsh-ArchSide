@@ -34377,6 +34377,22 @@ function date4(params) {
   return _coercedDate(ZodDate, params);
 }
 
+// src/compat/dsh.ts
+var DshCapabilityError = class extends Error {
+  constructor(capability) {
+    super(`ArchSide\uFF1A\u5F53\u524D DSH \u7F3A\u5C11\u53EF\u7528\u7684${capability}\uFF0C\u8BF7\u66F4\u65B0\u63D2\u4EF6\u4EE5\u9002\u914D\u8BE5\u63A5\u53E3`);
+    this.capability = capability;
+    this.name = "DshCapabilityError";
+  }
+  code = "ARCHSIDE_DSH_CAPABILITY_MISSING";
+};
+function requireDshMethods(target, methods2, capability) {
+  if (methods2.some((method) => typeof target?.[method] !== "function")) throw new DshCapabilityError(capability);
+}
+function optionalDshService(ctx, name2) {
+  return typeof ctx.get === "function" ? ctx.get(name2) : ctx[name2];
+}
+
 // src/core/remote.ts
 var session = external_exports.object({ sessionId: external_exports.string().min(1) });
 var requests = {
@@ -34395,43 +34411,62 @@ for (const [method, schema] of Object.entries(requests)) {
     result: { mode: "strict", typeSymbol: `dsh-plugin-archside#${method}:result`, create: () => external_exports.unknown() }
   };
 }
+requireDshMethods({ createTypertRemoteInfo }, ["createTypertRemoteInfo"], "\u8FDC\u7A0B\u534F\u8BAE\u63CF\u8FF0\u63A5\u53E3");
 var ARCHSIDE_REMOTE = createTypertRemoteInfo({ package: "dsh-plugin-archside", methods }, external_exports);
 
 // src/client/dsh-api.ts
 async function unwrap(call) {
   const result = await call;
+  if (!result || typeof result.ok !== "boolean") throw new DshCapabilityError("\u8FDC\u7A0B\u8C03\u7528\u7ED3\u679C\u63A5\u53E3");
   if (!result.ok) throw new Error(result.error?.message || "ArchSide \u8BF7\u6C42\u5931\u8D25");
   return result.value;
 }
 function sessionApi(ctx, sessionId) {
   const insertPrompt = async (text7) => {
-    const shell = ctx.conversation.input.shell(sessionId);
-    const { draft, draftRev } = shell.snapshot;
+    const input2 = optionalDshService(ctx, "conversation")?.input;
+    requireDshMethods(input2, ["shell"], "\u8F93\u5165\u6846\u63A5\u53E3");
+    const shell = input2.shell(sessionId);
+    requireDshMethods(shell, ["insertText", "focus"], "\u8F93\u5165\u6846\u63A5\u53E3");
+    const snapshot = shell?.snapshot;
+    if (typeof snapshot?.draft !== "string" || !Number.isFinite(snapshot?.draftRev)) {
+      throw new DshCapabilityError("\u8F93\u5165\u6846\u63A5\u53E3");
+    }
+    const { draft, draftRev } = snapshot;
     const suffix = `${draft && !/\s$/.test(draft) ? " " : ""}${text7} `;
     if (!shell.insertText(suffix, { start: draft.length, end: draft.length, draftRev })) throw new Error("\u8F93\u5165\u6846\u5185\u5BB9\u5DF2\u53D8\u5316\uFF0C\u8BF7\u518D\u6B21\u9009\u62E9\u8282\u70B9");
     shell.focus();
   };
+  const call = (method, request) => {
+    const remote = ctx.remote?.archside;
+    requireDshMethods(remote, [method], `\u8FDC\u7A0B\u63A5\u53E3 archside.${method}`);
+    return unwrap(remote[method](request));
+  };
   return {
-    snapshot: () => unwrap(ctx.remote.archside.snapshot({ sessionId })),
-    saveLayout: (layout) => unwrap(ctx.remote.archside.saveLayout({ sessionId, layout })),
+    snapshot: async () => call("snapshot", { sessionId }),
+    saveLayout: async (layout) => call("saveLayout", { sessionId, layout }),
     reference: async (id) => {
-      const ref = await unwrap(ctx.remote.archside.reference({ sessionId, id }));
+      const ref = await call("reference", { sessionId, id });
       await insertPrompt(ref.text);
     },
     insertPrompt,
-    asset: async (path2) => (await unwrap(ctx.remote.archside.asset({ sessionId, path: path2 }))).data
+    asset: async (path2) => (await call("asset", { sessionId, path: path2 })).data
   };
 }
 
 // src/client/plugin.tsx
 var import_jsx_runtime5 = require("react/jsx-runtime");
-var inject = ["slots", "locale", "sidebarRightTabs", "sidebarRight", "conversation", "remote"];
+var inject = ["slots", "locale", "sidebarRightTabs", "sidebarRight", "remote"];
 async function apply(ctx) {
+  requireDshMethods(ctx, ["effect", "inject"], "\u63D2\u4EF6\u751F\u547D\u5468\u671F\u63A5\u53E3");
+  requireDshMethods(ctx.remote, ["$mount"], "\u8FDC\u7A0B\u670D\u52A1\u6302\u8F7D\u63A5\u53E3");
   const unmountRemote = await ctx.remote.$mount(ARCHSIDE_REMOTE);
   ctx.effect(() => unmountRemote, "archside.remote");
   ctx.inject(["remote.archside", ...inject], registerUi);
 }
 function registerUi(ctx) {
+  requireDshMethods(ctx.sidebarRightTabs, ["register"], "\u4FA7\u680F\u6807\u7B7E\u6CE8\u518C\u63A5\u53E3");
+  requireDshMethods(ctx.sidebarRight, ["openTabIn"], "\u4FA7\u680F\u6253\u5F00\u63A5\u53E3");
+  requireDshMethods(ctx.slots, ["inject", "register"], "\u754C\u9762\u63D2\u69FD\u63A5\u53E3");
   function Body({ sessionId }) {
     const api = (0, import_react5.useMemo)(() => sessionApi(ctx, sessionId), [sessionId]);
     return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(ArchitecturePanel, { api, sessionKey: sessionId }, sessionId);
