@@ -8,7 +8,24 @@
 
 ArchSide is a general-purpose project architecture sidebar plugin for **DeepSeek Harness**. It keeps native Agent chat on the left and an explorable architecture graph on the right. One `architecture.md` connects requirements, structural design, and implementation.
 
-Version **0.1.5** targets **DSH Desktop 0.2.1-rc.2**. It supports existing codebases and projects still at the design stage, without depending on a particular domain or programming language.
+Version **0.1.7** uses capability-based DSH integration without a host version gate. It supports existing codebases and projects still at the design stage, without depending on a particular domain or programming language.
+
+### DSH version compatibility
+
+`engines.dsh` and host peer dependencies are `*`. The installer does not enforce a version range. Older, newer and prerelease hosts are not rejected by this plugin based on their version number. Pinned development dependencies provide reproducible builds without restricting the actual host. Newly tested host versions can be recorded here without publishing another plugin release just to change a version number.
+
+Integration uses public DSH / Cordis interfaces and checks available capabilities. Missing core services produce explicit diagnostics. An unavailable composer or nonessential remote method, such as image loading, affects that operation while graph reading remains available. The composer is looked up again on each operation so restored services can be used without retaining stale instances. There is no fallback that overwrites the draft.
+
+| Tested DSH version | Automated validation |
+| --- | --- |
+| 0.2.1-rc.2 | Types, 36 tests, real host/client gateway calls, build and browser entry |
+| 0.2.1-rc.3 | Types, 36 tests, real host/client gateway calls, build and browser entry |
+
+Unlisted versions are allowed to load but have not been validated. These checks do not replace desktop acceptance testing. If DSH removes public interfaces or changes their semantics, the compatibility layer still needs updating; arbitrary future API changes cannot be handled automatically.
+
+`npm run test:compatibility` tests the two versions above in isolated directories. Pass another exact version with `npm run test:compatibility -- 0.2.1-rc.3`; the runner has no version range gate. It does not modify your DSH installation or profile. Synthetic versions used in admission tests verify only the absence of a version gate, not actual SDK compatibility.
+
+To upgrade, install **`dsh-plugin-archside-0.1.7.tgz`** through DSH's plugin page and restart if prompted. Editing source does not update an installed plugin.
 
 ## Preview
 
@@ -51,7 +68,7 @@ Complete the installation confirmations shown by DSH. If a restart is requested,
 
 1. Open **Plugins (插件)** in DSH's left sidebar.
 2. Click **Add plugin (添加插件)**, or use its dropdown and choose **Install third-party plugin (安装第三方插件)**.
-3. Enter "https://github.com/ZerothXX/dsh-ArchSide" , then install.
+3. Enter the absolute path to an ArchSide `.tgz` package, a package download URL, or a **previously built local project directory**, then install.
 4. Follow the page's instructions to finish installation and enable the plugin. Save your work and restart DSH if requested.
 
 <details>
@@ -61,6 +78,7 @@ Complete the installation confirmations shown by DSH. If a restart is requested,
 
 </details>
 
+The page also accepts npm package names and Git URLs. For GitHub source, let the Agent build it or generate a package using the steps below. Installing by npm package name requires publishing to npm first. When a Release package is available, its download URL can be used directly.
 
 ### Option 3: Install manually from source
 
@@ -73,7 +91,7 @@ npm.cmd ci
 npm.cmd run install:desktop -- -DesktopDirectory 'C:\Path\To\DeepSeek Harness'
 ```
 
-The script checks the host version and running processes, builds and packages the plugin, backs up the desktop profile manifest and lockfile, and installs through the **CLI bundled with DSH Desktop**. Backups stay in local `artifacts/`. The installer does not terminate user processes.
+The script checks the installation directory and running processes, builds and packages the plugin, backs up the desktop profile manifest and lockfile, and installs through the **CLI bundled with DSH Desktop**. The host version is displayed for information only. Backups stay in local `artifacts/`. The installer does not terminate user processes.
 
 4. Reopen DSH after installation.
 
@@ -88,7 +106,7 @@ An existing ArchSide-format `architecture.md` loads automatically. Otherwise, ch
 
 ```powershell
 npm.cmd run pack:plugin
-& 'C:\Path\To\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd' plugin --profile desktop add 'C:\Path\To\ArchSide\dsh-plugin-archside-0.1.5.tgz'
+& 'C:\Path\To\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd' plugin --profile desktop add 'C:\Path\To\ArchSide\dsh-plugin-archside-0.1.7.tgz'
 ```
 
 To remove the plugin, fully quit DSH first, then run:
@@ -160,21 +178,23 @@ npm.cmd run build
 npm.cmd run dev
 ```
 
-Open <http://127.0.0.1:4173>(This address points to the local machine running the preview service and is not an online demo address. Users who have only installed and used the plugin can skip this section.). The preview reads the current directory's `architecture.md`; its left-hand draft area is not connected to a model. Validate actual Agent collaboration inside DSH. Set `ARCHSIDE_PREVIEW_WORKSPACE` to use another workspace.
+Open <http://127.0.0.1:4173>. The preview reads the current directory's `architecture.md`; its left-hand draft area is not connected to a model. Validate actual Agent collaboration inside DSH. Set `ARCHSIDE_PREVIEW_WORKSPACE` to use another workspace.
 
 ```powershell
 npm.cmd run check
+npm.cmd run test:compatibility
 npm.cmd run test:ui
 npm.cmd run test:performance
 npm.cmd run pack:plugin
 ```
 
-`check` runs type checking, automated tests, and the build. UI tests and package-entry validation use locally installed **Google Chrome**. UI tests use a temporary workspace and save screenshots to `artifacts/`. There are currently 31 automated tests covering MD, stable relationships, layout, routing, drag previews, storage, and DSH integration. `test:performance` uses 120 nodes and 134 business relationships to check background computation, routing job counts during dragging, geometry reuse when panning/zooming, and interaction frame times.
+`check` runs type checking, automated tests, and the build. UI tests and package-entry validation use locally installed **Google Chrome**. UI tests use a temporary workspace and save screenshots to `artifacts/`. There are currently 36 automated tests covering unrestricted version declarations, capability checks and graceful degradation, MD, stable relationships, layout, routing, drag previews, storage, and DSH integration. `test:performance` uses 120 nodes and 134 business relationships to check background computation, routing job counts during dragging, geometry reuse when panning/zooming, and interaction frame times.
 
 | Directory | Responsibility |
 | --- | --- |
 | `src/core/` | Models, MD parsing, graph projection, layout, and routing |
 | `src/client/` | Three-level panel, DSH sidebar, and composer integration |
+| `src/compat/` | Version-independent capability checks and optional service lookup |
 | `src/host/` | Workspace files, task state, Agent tools, and gateway |
 | `src/preview/` | Local development preview |
 | `tests/`, `scripts/` | Tests, build, packaging, and desktop installation |
