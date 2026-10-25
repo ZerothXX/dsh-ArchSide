@@ -1,6 +1,6 @@
 import React, { memo, useMemo, useState } from 'react';
 import type { Architecture, ArchitectureNode } from '../core/model';
-import { palette } from '../core/model';
+import { PALETTE, palette } from '../core/model';
 import type { DisplayNode, Projection } from '../core/projection';
 import { Icon } from './icons';
 const statusText = { planned: '待实现', implemented: '已实现', unknown: '待核实' };
@@ -19,7 +19,7 @@ export const GraphScene = memo(function GraphScene({ projection, doc, expanded, 
   const originalEdges = useMemo(() => new Map(doc.edges.map(e => [e.id, e])), [doc]);
   const { pointerDown, openMenu, extend } = actions;
   return <>
-            <svg className="as-edges" width={projection.width} height={projection.height} aria-label="节点关系连线"><defs>{['blue', 'purple', 'teal', 'orange', 'slate'].map(color => <marker key={color} id={`as-arrow-${color}`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill={palette(color).ink}/></marker>)}</defs>{projection.edges.map(edge => {
+            <svg className="as-edges" width={projection.width} height={projection.height} aria-label="节点关系连线"><defs>{PALETTE.map(({ id: color }) => <marker key={color} id={`as-arrow-${color}`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill={palette(color).ink}/></marker>)}</defs>{projection.edges.map(edge => {
               const source = nodes.get(edge.source), target = nodes.get(edge.target); if (!source || !target) return null;
               const route = projection.routes.get(edge.id); if (!route) return null;
               const { d, label, labelWidth } = route; const color = edge.kind === 'optional' ? 'slate' : source.color;

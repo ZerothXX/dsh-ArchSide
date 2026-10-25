@@ -1,4 +1,5 @@
 import { Architecture, ArchitectureNode, ArchitectureEdge, PALETTE } from './model';
+import { assignChapterColors } from './chapter-colors';
 
 export class FormatError extends Error { constructor(message: string) { super(message); this.name = 'FormatError'; } }
 function fail(message: string): never { throw new FormatError(message); }
@@ -11,6 +12,7 @@ export function parseMarkdown(markdown: string): Architecture {
   if (markdown.length > 2_000_000) fail('架构 MD 超过 2 MB');
   const lines = markdown.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').split('\n');
   const doc: Architecture = { version: 1, title: '未命名项目', description: '', nodes: [], edges: [] };
+  const colorPreferences = new Map<string, string>();
   let current: { number: string; title: string; lines: string[] } | undefined;
   const intro: string[] = []; let graph: Record<string, unknown> = {}; let fence = ''; let graphLines: string[] | null = null; let graphSeen = false;
   const finish = () => {
@@ -50,6 +52,7 @@ export function parseMarkdown(markdown: string): Architecture {
     if (!Array.isArray(files) || files.some(f => typeof f !== 'string')) fail(`${number} 的 files 必须是字符串数组`);
     const color = meta.color ?? parent?.color ?? PALETTE[doc.nodes.filter(n => n.depth === 1).length % PALETTE.length].id;
     if (!PALETTE.some(p => p.id === color)) fail(`${number} 的 color 不在预设调色板中`);
+    if (depth === 1 && meta.color !== undefined) colorPreferences.set(id, color as string);
     const summary = meta.summary === undefined ? body.split(/\n\s*\n/)[0].replace(/[#*`]/g, '').slice(0, 280) : asText(meta.summary, 'summary');
     doc.nodes.push({ id, number, title: current.title, depth: depth as 1 | 2 | 3,
       ...(parent ? { parentId: parent.id } : {}), chapterId: parent?.chapterId ?? id,
@@ -103,7 +106,7 @@ export function parseMarkdown(markdown: string): Architecture {
     if (!identifier.test(id) || edgeIds.has(id)) fail(`连线 ID 无效或重复：${id}`); edgeIds.add(id);
     return { id, source, target, label: e.label === undefined ? '' : asText(e.label, 'label'), kind: kind as ArchitectureEdge['kind'] };
   });
-  return doc;
+  return assignChapterColors(doc, colorPreferences);
 }
 
 export function serializeMarkdown(doc: Architecture): string {

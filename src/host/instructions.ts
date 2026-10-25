@@ -11,7 +11,7 @@ Section body. Use ordinary Markdown, lists, tables, image examples and fenced so
 <!-- archside: {"id":"stable-leaf-id","status":"planned","files":[]} -->
 Detailed inputs, outputs, requirements, examples, methods/models and implementation references.
 End with one fenced archside JSON block: {"version":1,"edges":[{"id":"edge-1","source":"stable-section-id","target":"stable-leaf-id","label":"data / dependency description","kind":"data"}]}.
-Allowed colors: blue, purple, teal, orange, slate. Allowed status: planned, implemented, unknown.
+Allowed colors: blue, purple, teal, orange, slate, rose, olive, brown. Chapter colors are preferences: the parser assigns different colors to up to eight chapters; beyond eight it prefers sharing colors between chapters with no or fewer cross-chapter edges. All sections and subsections inherit their chapter's assigned color. Do not invent or remove business edges to influence colors. Allowed status: planned, implemented, unknown.
 Allowed edge kinds: data, dependency, optional. All edges use stable IDs, NEVER names or displayed numbers.
 Only numbered headings ## / ### / #### define nodes. Keep IDs unchanged when renaming/reordering. Update edges when actual functions, ownership or dependencies change; remove dangling edges on deletion.
 All node files and Markdown images use workspace-relative paths. Each node's body is its complete read-only detail; summary and files appear when its card expands.

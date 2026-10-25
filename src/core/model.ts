@@ -19,7 +19,10 @@ export const PALETTE = [
   { id: 'purple', label: '紫色', ink: '#8a6bb6', fill: '#f4effb', group: '#faf7fd' },
   { id: 'teal', label: '青色', ink: '#308e82', fill: '#edf7f3', group: '#f5faf8' },
   { id: 'orange', label: '橙色', ink: '#bf8738', fill: '#fff6e9', group: '#fffbf3' },
-  { id: 'slate', label: '灰蓝', ink: '#698398', fill: '#eff3f6', group: '#f7f9fb' },
+  { id: 'slate', label: '灰色', ink: '#626c78', fill: '#f0f2f5', group: '#f7f8fa' },
+  { id: 'rose', label: '玫红', ink: '#b34d72', fill: '#fbedf2', group: '#fdf6f9' },
+  { id: 'olive', label: '橄榄绿', ink: '#73812d', fill: '#f3f6e7', group: '#f9fbf2' },
+  { id: 'brown', label: '棕色', ink: '#8b6045', fill: '#f5eee8', group: '#faf7f3' },
 ];
 export const palette = (id: string) => PALETTE.find(p => p.id === id) ?? PALETTE[0];
 export const emptyLayout = (): Layout => ({ version: 1, views: {} });
