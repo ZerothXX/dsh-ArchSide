@@ -8,7 +8,7 @@
 
 ArchSide is a general-purpose project architecture sidebar plugin for **DeepSeek Harness**. It keeps native Agent chat on the left and an explorable architecture graph on the right. One `architecture.md` connects requirements, structural design, and implementation.
 
-Version **0.1.8** uses capability-based DSH integration without a host version gate. It supports existing codebases and projects still at the design stage, without depending on a particular domain or programming language.
+Version **0.1.9** uses capability-based DSH integration without a host version gate. It supports existing codebases and projects still at the design stage, without depending on a particular domain or programming language.
 
 ### DSH version compatibility
 
@@ -18,14 +18,14 @@ Integration uses public DSH / Cordis interfaces and checks available capabilitie
 
 | Tested DSH version | Automated validation |
 | --- | --- |
-| 0.2.1-rc.2 | Types, 42 tests, real host/client gateway calls, build and browser entry |
-| 0.2.1-rc.3 | Types, 42 tests, real host/client gateway calls, build and browser entry |
+| 0.2.1-rc.2 | Types, 45 tests, real host/client gateway calls, build and browser entry |
+| 0.2.1-rc.3 | Types, 45 tests, real host/client gateway calls, build and browser entry |
 
 Unlisted versions are allowed to load but have not been validated. These checks do not replace desktop acceptance testing. If DSH removes public interfaces or changes their semantics, the compatibility layer still needs updating; arbitrary future API changes cannot be handled automatically.
 
 `npm run test:compatibility` tests the two versions above in isolated directories. Pass another exact version with `npm run test:compatibility -- 0.2.1-rc.3`; the runner has no version range gate. It does not modify your DSH installation or profile. Synthetic versions used in admission tests verify only the absence of a version gate, not actual SDK compatibility.
 
-To upgrade, install **`dsh-plugin-archside-0.1.8.tgz`** through DSH's plugin page and restart if prompted. Editing source does not update an installed plugin.
+To upgrade, install **`dsh-plugin-archside-0.1.9.tgz`** through DSH's plugin page and restart if prompted. Editing source does not update an installed plugin.
 
 ## Preview
 
@@ -39,7 +39,7 @@ To upgrade, install **`dsh-plugin-archside-0.1.8.tgz`** through DSH's plugin pag
 - **Reference nodes in chat:** use `>` or the context menu to select `@`. Add one or more references to the native composer, write your instruction, then send.
 - **Start from code or requirements:** ask the Agent to scan a codebase and draft the MD, or design an architecture before implementation exists.
 - **Keep the graph and MD connected:** headings define chapters, sections, and subsections. Stable IDs preserve relationships when names or display numbers change.
-- **Eight chapter colors:** up to eight chapters receive distinct colors. Larger graphs preferentially reuse colors between chapters with no or fewer connections; descendants inherit their chapter color.
+- **Eight chapter colors:** the first eight numbered chapters receive distinct colors. Each later chapter reuses the color with the fewest connections to earlier members of that color group. Descendants inherit chapter colors; same-colored chapters remain independent nodes.
 - **Arrange freely, preserve relationships:** nodes from the same chapter stay near each other, using shared colors without enclosing boxes. Thin rounded routes avoid cards; original relationships remain individually visible. Dotted lines show parent-child composition only; sharing a chapter adds no extra connection.
 - **Move smoothly:** animation frames update dragged nodes and connected endpoints. Full layout and obstacle routing run in a background worker after release. Panning, zooming, and unchanged polls reuse existing geometry.
 - **Navigate and inspect:** drag nodes, pan, zoom, fit the canvas, expand/collapse explanations, and search node names, files, or descriptive text.
@@ -79,7 +79,9 @@ Complete the installation confirmations shown by DSH. If a restart is requested,
 
 </details>
 
-The page also accepts npm package names and Git URLs. For GitHub source, let the Agent build it or generate a package using the steps below. Installing by npm package name requires publishing to npm first. When a Release package is available, its download URL can be used directly.
+The page also accepts npm package names and Git URLs. The GitHub upload archive includes a matching `dist/` build: upload it along with the sources and replace any old build. Updating only the manifest or sources can leave an old program running under a newer version label. `prepare` rebuilds during Git installs that allow lifecycle scripts and local `npm ci`. If the host disables these scripts, use the complete included build or a Release `.tgz`. Installing by npm package name requires publishing to npm first.
+
+After installation, the panel header should display **v0.1.9**. If it shows an older version or no version label, save your work and fully restart DSH; reinstall using this release's `.tgz` absolute path if needed.
 
 ### Option 3: Install manually from source
 
@@ -107,7 +109,7 @@ An existing ArchSide-format `architecture.md` loads automatically. Otherwise, ch
 
 ```powershell
 npm.cmd run pack:plugin
-& 'C:\Path\To\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd' plugin --profile desktop add 'C:\Path\To\ArchSide\dsh-plugin-archside-0.1.8.tgz'
+& 'C:\Path\To\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd' plugin --profile desktop add 'C:\Path\To\ArchSide\dsh-plugin-archside-0.1.9.tgz'
 ```
 
 To remove the plugin, fully quit DSH first, then run:
@@ -153,7 +155,7 @@ Accept images, preprocess them, and produce model outputs.
 
 Numbering supports up to three levels; parents must appear first, and numbers and IDs must be unique. Preserve `id` when renaming or renumbering a node; use a new ID for a new function. Supported `color` values are `blue`, `purple`, `teal`, `orange`, `slate` (gray), `rose`, `olive`, and `brown`; `status` is `planned`, `implemented`, or `unknown`. `files` holds project-relative paths, and `summary` provides a short explanation. The node body contains its full details.
 
-Chapter `color` is a preference. Up to eight chapters receive distinct colors; larger graphs reuse colors according to cross-chapter business relationship counts. Relationships between descendants count toward their chapters, in both directions, including parallel relationships. Internal relationships are excluded. The heuristic first avoids connected chapters sharing a color, then reduces the total weight of same-color connections; it does not guarantee a global optimum for every graph. Descendants, legends and arrowheads follow chapter colors. Conflicting preferences are adjusted; diverse existing assignments are preserved unless an improvement is available. Reimporting serialized MD keeps the assigned colors stable.
+Colors are assigned automatically; legacy `color` metadata remains readable but does not override the rule. Chapters are processed in numeric order. The first eight receive the eight palette colors in order and remain distinct, including in larger graphs. Each later chapter uses the color with the fewest total business relationships to all earlier chapters already using that color, including earlier overflow chapters. Ties prefer fewer owners, then palette order. Relationships between descendants count toward their chapters, in both directions, including parallel relationships; internal relationships are excluded. Descendants, legends and arrowheads follow chapter colors. Same-colored chapters remain independent nodes. Unchanged numbering and relationships yield the same colors after MD round trips; numbering or relationship changes trigger recalculation.
 
 Declare relationships in a single `archside` code block, using stable IDs for endpoints:
 
@@ -192,7 +194,7 @@ npm.cmd run test:performance
 npm.cmd run pack:plugin
 ```
 
-`check` runs type checking, automated tests, and the build. UI tests and package-entry validation use locally installed **Google Chrome**. UI tests use a temporary workspace and save screenshots to `artifacts/`. There are currently 42 automated tests covering eight-color assignment, connectivity-aware reuse and color round trips, unrestricted version declarations, capability checks and graceful degradation, MD, stable relationships, layout, routing, drag previews, storage, and DSH integration. `test:colors` checks eight/nine chapters, both overview modes, legends and every colored arrowhead in a real browser. `test:performance` uses 120 nodes and 134 business relationships to check background computation, routing job counts during dragging, geometry reuse when panning/zooming, and interaction frame times.
+`check` runs type checking, automated tests, and the build. UI tests and package-entry validation use locally installed **Google Chrome**. UI tests use a temporary workspace and save screenshots to `artifacts/`. There are currently 45 automated tests covering source/build integrity, eight-color assignment, sequential connectivity-aware reuse and color round trips, unrestricted version declarations, capability checks and graceful degradation, MD, stable relationships, layout, routing, drag previews, storage, and DSH integration. `test:colors` checks eight/nine/ten chapters, both overview modes, legacy five-color metadata, legends and every colored arrowhead in a real browser. `verify:package` checks source and build hashes, then feeds ten legacy-colored chapters through the actual host bundle and renders the resulting snapshot with the actual client bundle; an extracted TGZ directory can be passed as an argument. `test:performance` uses 120 nodes and 134 business relationships to check background computation, routing job counts during dragging, geometry reuse when panning/zooming, and interaction frame times.
 
 | Directory | Responsibility |
 | --- | --- |

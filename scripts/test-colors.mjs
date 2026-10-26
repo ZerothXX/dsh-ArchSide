@@ -6,22 +6,17 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import { PALETTE } from '../src/core/model.ts';
 import { parseMarkdown } from '../src/core/markdown.ts';
+import { colorFixture, colorIds } from './color-fixture.mjs';
 
 await mkdir('artifacts', { recursive: true });
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 try {
-  for (const count of [8, 9]) {
+  for (const count of [8, 9, 10]) {
     const workspace = await mkdtemp(path.join(tmpdir(), 'archside-colors-'));
-    const chapters = Array.from({ length: count }, (_, i) =>
-      `## ${i + 1} 模块 ${i + 1}\n<!-- archside: {"id":"chapter-${i}","color":"blue"} -->\n### ${i + 1}.1 内部结构\n<!-- archside: {"id":"section-${i}"} -->\n`).join('\n');
-    const edges = count === 8
-      ? Array.from({ length: count }, (_, i) => ({ id: `edge-${i}`, source: `section-${i}`, target: `section-${(i + 1) % count}`, kind: 'data', label: '' }))
-      : Array.from({ length: count }, (_, a) => Array.from({ length: count - a - 1 }, (_, i) => {
-        const b = a + i + 1;
-        return a === 0 && b === 8 ? [] : [{ id: `edge-${a}-${b}`, source: `section-${a}`, target: `section-${b}`, kind: 'data', label: '' }];
-      }).flat()).flat();
-    const markdown = `# ${count} 个结构部分的配色\n${chapters}\n\`\`\`archside\n${JSON.stringify({ version: 1, edges })}\n\`\`\`\n`;
+    const { markdown, edges, expectedColors } = colorFixture(count);
     const expected = parseMarkdown(markdown);
+    assert.deepEqual(expected.nodes.filter(n => n.depth === 1).map(n => n.color), expectedColors);
+    assert.deepEqual(expectedColors.slice(0, 8), colorIds);
     await writeFile(path.join(workspace, 'architecture.md'), markdown);
     const port = 4183;
     const server = spawn(process.execPath, ['--import', 'tsx', 'scripts/preview.mjs'], {
@@ -65,6 +60,8 @@ try {
         for (const arrow of arrows) assert.equal(arrow.stroke, arrow.fill, 'Every relationship arrow must match its source color');
         const legend = await page.locator('.as-legend > span:not(.as-structure-key) i').evaluateAll(elements => elements.map(element => element.style.background));
         assert.equal(new Set(legend).size, 8);
+        const expectedLegend = await page.evaluate(inks => inks.map(ink => { const e = document.createElement('i'); e.style.background = ink; return e.style.background; }), expectedColors.map(id => PALETTE.find(p => p.id === id).ink));
+        assert.deepEqual(legend, expectedLegend);
       };
       await verify(1);
       if (count === 9) {
@@ -86,5 +83,5 @@ try {
     }
   }
 } finally { await browser.close(); }
-console.log('Verified eight distinct chapter colors, disconnected-pair reuse, descendant inheritance, legends and all colored arrowheads in both overview modes.');
-console.log('Screenshots: artifacts/8-chapter-colors.png, artifacts/9-chapter-colors.png');
+console.log('Verified eight/nine/ten chapters, fixed distinct first eight, legacy five-color migration, minimum-connection reuse, descendants, legends and all colored arrowheads in both overview modes.');
+console.log('Screenshots: artifacts/8-chapter-colors.png, artifacts/9-chapter-colors.png, artifacts/10-chapter-colors.png');

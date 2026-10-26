@@ -10,6 +10,7 @@ import { previewRoute } from './drag-preview';
 import type { ArchsideApi } from './api';
 import { Icon } from './icons';
 import styles from './style.css';
+import { version } from '../../package.json';
 
 type Viewport = { x: number; y: number; zoom: number };
 type Navigation = { chapter: string | null; detail: string | null; detailed: boolean };
@@ -216,7 +217,7 @@ export function ArchitecturePanel({ api, sessionKey }: { api: ArchsideApi; sessi
   return <div className="archside" ref={panel} data-testid="architecture-panel" onKeyDown={e => { if (e.key === 'Escape') { setMenu(null); setSearchOpen(false); } }}>
     <style>{styles}</style>
     <header className="as-header">
-      <div className="as-brand"><span className="as-brand-icon"><Icon name="layers" size={17}/></span><strong>ArchSide</strong><span className="as-header-label">项目架构</span></div>
+      <div className="as-brand"><span className="as-brand-icon"><Icon name="layers" size={17}/></span><strong>ArchSide</strong><span className="as-header-label" title={`ArchSide 客户端版本 ${version}`}>项目架构 · v{version}</span></div>
       <div className="as-header-actions"><button title="查找节点、文件或方法" aria-label="查找节点" onClick={() => setSearchOpen(!searchOpen)}><Icon name="search"/></button><button title="重新读取架构 MD" aria-label="刷新架构" onClick={() => api.snapshot().then(applySnapshot).catch(showError)}><Icon name="refresh" size={16}/></button></div>
     </header>
     <div className="as-breadcrumb"><button onClick={() => navigate(null, null)}>项目总览</button>{chapter && <><span>/</span><button onClick={() => navigate(chapter.id, null)}>{chapter.number} {chapter.title}</button></>}{detail && <><span>/</span><span>{detail.number} {detail.title}</span></>}

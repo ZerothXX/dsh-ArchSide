@@ -61,7 +61,10 @@ var PALETTE = [
   { id: "purple", label: "\u7D2B\u8272", ink: "#8a6bb6", fill: "#f4effb", group: "#faf7fd" },
   { id: "teal", label: "\u9752\u8272", ink: "#308e82", fill: "#edf7f3", group: "#f5faf8" },
   { id: "orange", label: "\u6A59\u8272", ink: "#bf8738", fill: "#fff6e9", group: "#fffbf3" },
-  { id: "slate", label: "\u7070\u84DD", ink: "#698398", fill: "#eff3f6", group: "#f7f9fb" }
+  { id: "slate", label: "\u7070\u8272", ink: "#626c78", fill: "#f0f2f5", group: "#f7f8fa" },
+  { id: "rose", label: "\u73AB\u7EA2", ink: "#b34d72", fill: "#fbedf2", group: "#fdf6f9" },
+  { id: "olive", label: "\u6A44\u6984\u7EFF", ink: "#73812d", fill: "#f3f6e7", group: "#f9fbf2" },
+  { id: "brown", label: "\u68D5\u8272", ink: "#8b6045", fill: "#f5eee8", group: "#faf7f3" }
 ];
 var emptyLayout = () => ({ version: 1, views: {} });
 function descendants(doc, id) {
@@ -81,6 +84,37 @@ function nodeContext(doc, ids) {
     connected: doc.nodes.filter((n) => connected.has(n.id) && !related.has(n.id)),
     edges
   };
+}
+
+// src/core/chapter-colors.ts
+function assignChapterColors(doc) {
+  const chapters = doc.nodes.filter((n) => n.depth === 1).sort((a, b) => a.number.length - b.number.length || (a.number < b.number ? -1 : a.number > b.number ? 1 : 0));
+  const neighbors = new Map(chapters.map((n) => [n.id, /* @__PURE__ */ new Map()]));
+  const chapterFor = new Map(doc.nodes.map((n) => [n.id, n.chapterId]));
+  for (const edge of doc.edges) {
+    const a = chapterFor.get(edge.source), b = chapterFor.get(edge.target);
+    if (!a || !b || a === b) continue;
+    for (const [source, target] of [[a, b], [b, a]]) {
+      const weights = neighbors.get(source);
+      weights.set(target, (weights.get(target) ?? 0) + 1);
+    }
+  }
+  const assigned = /* @__PURE__ */ new Map();
+  const counts = new Map(PALETTE.map((p) => [p.id, 0]));
+  for (const [index, chapter] of chapters.entries()) {
+    let color = PALETTE[index]?.id;
+    if (index >= PALETTE.length) {
+      const costs = new Map(PALETTE.map((p) => [p.id, 0]));
+      for (const [other, weight] of neighbors.get(chapter.id)) {
+        const earlierColor = assigned.get(other);
+        if (earlierColor) costs.set(earlierColor, costs.get(earlierColor) + weight);
+      }
+      color = [...PALETTE].sort((a, b) => costs.get(a.id) - costs.get(b.id) || counts.get(a.id) - counts.get(b.id) || PALETTE.indexOf(a) - PALETTE.indexOf(b))[0].id;
+    }
+    assigned.set(chapter.id, color);
+    counts.set(color, counts.get(color) + 1);
+  }
+  return { ...doc, nodes: doc.nodes.map((n) => ({ ...n, color: assigned.get(n.chapterId) })) };
 }
 
 // src/core/markdown.ts
@@ -236,7 +270,7 @@ function parseMarkdown(markdown) {
     edgeIds.add(id);
     return { id, source, target, label: e.label === void 0 ? "" : asText(e.label, "label"), kind };
   });
-  return doc;
+  return assignChapterColors(doc);
 }
 function serializeMarkdown(doc) {
   const out = [`# ${doc.title}`, "", doc.description, ""];
@@ -489,7 +523,7 @@ Section body. Use ordinary Markdown, lists, tables, image examples and fenced so
 <!-- archside: {"id":"stable-leaf-id","status":"planned","files":[]} -->
 Detailed inputs, outputs, requirements, examples, methods/models and implementation references.
 End with one fenced archside JSON block: {"version":1,"edges":[{"id":"edge-1","source":"stable-section-id","target":"stable-leaf-id","label":"data / dependency description","kind":"data"}]}.
-Allowed colors: blue, purple, teal, orange, slate. Allowed status: planned, implemented, unknown.
+Allowed colors: blue, purple, teal, orange, slate, rose, olive, brown. Colors are assigned automatically in numeric chapter order: the first eight chapters receive these eight distinct colors in order and remain distinct even when the graph has more chapters. Each later chapter uses the color with the fewest total business edges to ALL earlier chapters already using that color (including earlier overflow chapters); ties prefer fewer owners, then palette order. Both directions and parallel edges count; within-chapter edges do not. Legacy color metadata is accepted but does not override this rule. All sections and subsections inherit their chapter color. Same-colored chapters remain independent nodes and must never be merged just because of color. Do not invent or remove business edges to influence colors. Allowed status: planned, implemented, unknown.
 Allowed edge kinds: data, dependency, optional. All edges use stable IDs, NEVER names or displayed numbers.
 Only numbered headings ## / ### / #### define nodes. Keep IDs unchanged when renaming/reordering. Update edges when actual functions, ownership or dependencies change; remove dangling edges on deletion.
 All node files and Markdown images use workspace-relative paths. Each node's body is its complete read-only detail; summary and files appear when its card expands.
