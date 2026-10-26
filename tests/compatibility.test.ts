@@ -9,6 +9,15 @@ import { DshCapabilityError } from '../src/compat/dsh';
 
 const manifest = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 
+test('prebuilt Git and TGZ installs do not require lifecycle build approval', () => {
+  for (const hook of ['preinstall', 'install', 'postinstall', 'prepare', 'prepack', 'prepublish', 'prepublishOnly']) {
+    assert.equal(manifest.scripts?.[hook], undefined, `${hook} must not trigger a build in the DSH profile`);
+  }
+  assert.equal(manifest.main, './dist/host.js');
+  assert.equal(manifest.exports['./client'], './dist/client.js');
+  assert.ok(manifest.files.includes('dist'));
+});
+
 test('manifest and SDK peers do not gate DSH versions, including prereleases', () => {
   assert.equal(manifest.engines.dsh, '*');
   for (const range of [manifest.engines.dsh, ...Object.values(manifest.peerDependencies)]) {

@@ -28,6 +28,9 @@ export async function writeBuildManifest(root = resolve('.')) {
 export async function verifyBuild(root = resolve('.'), checkSources = true) {
   const manifest = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
   const build = JSON.parse(await readFile(join(root, 'dist/build-info.json'), 'utf8'));
+  for (const hook of ['preinstall', 'install', 'postinstall', 'prepare', 'prepack', 'prepublish', 'prepublishOnly']) {
+    assert.equal(manifest.scripts?.[hook], undefined, `Install-time build approval would be required: ${hook}`);
+  }
   assert.equal(build.version, manifest.version, 'Build version differs from package.json; rebuild before publishing');
   assert.deepEqual(Object.keys(build.files).sort(), [...outputs].sort());
   for (const file of outputs) assert.equal(sha256(await readFile(join(root, 'dist', file))), build.files[file], `Stale or mixed build: ${file}`);

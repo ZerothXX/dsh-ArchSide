@@ -1,11 +1,11 @@
 {
-  "version": "0.1.9",
-  "sourceHash": "b6386e57e3aea59dc11e86670a566dfcc0b0208bf72f393bc868ceaf4cb36998",
+  "version": "0.1.10",
+  "sourceHash": "2f103a02a748aa0553f7be76abe84b1830362d1cae3eb869c086fdc36eb5b433",
   "files": {
     "host.js": "9c2572c30585436ceaa5991d20613bcf802452c72316887b5c636157aa2ab980",
     "host.js.map": "3c2fbe3a3c091c5c84bda95ed56fc549480ea25b5590c2467776f692d1b9fed9",
-    "client.js": "554bd18643820b35a23f4d673e72101625e9975d99ee31d3e58135f5a13dc9d3",
-    "preview.js": "cbc13c0f04396adee4d494ad9b9abb0dcad57713b66de46f98aa7be7cf9ee1d1",
+    "client.js": "78b27330356980b66b5024e3a0ac07ae563a7b9b407d637c67b19113855ad694",
+    "preview.js": "ee57654dada113b126e7c1432238b58c9867ed117120c97739b0d1a328cd9d29",
     "index.html": "7a3b77c7775dbb97d6c720dc4b5168eba8dfb79e547ada07e9f255bab1f01cc3"
   }
 }

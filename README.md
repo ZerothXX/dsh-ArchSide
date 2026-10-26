@@ -8,7 +8,7 @@
 
 ArchSide 是面向 **DeepSeek Harness** 的通用项目架构侧栏插件。左侧保留原生 Agent 对话，右侧展示可逐层探索的架构图；以一个 `architecture.md` 连接项目需求、结构设计和程序实现。
 
-当前版本 **0.1.9**，采用基于接口能力的 DSH 兼容策略，不按宿主版本号限制加载。支持已有代码的项目，也支持尚未实现的需求设计，不绑定业务类型或编程语言。
+当前版本 **0.1.10**，采用基于接口能力的 DSH 兼容策略，不按宿主版本号限制加载。支持已有代码的项目，也支持尚未实现的需求设计，不绑定业务类型或编程语言。
 
 ### DSH 版本兼容
 
@@ -18,14 +18,14 @@ ArchSide 是面向 **DeepSeek Harness** 的通用项目架构侧栏插件。左�
 
 | 已验证的 DSH 版本 | 自动化验证 |
 | --- | --- |
-| 0.2.1-rc.2 | 类型检查、45 项测试、真实双端网关调用、构建和浏览器入口 |
-| 0.2.1-rc.3 | 类型检查、45 项测试、真实双端网关调用、构建和浏览器入口 |
+| 0.2.1-rc.2 | 类型检查、46 项测试、真实双端网关调用、构建和浏览器入口 |
+| 0.2.1-rc.3 | 类型检查、46 项测试、真实双端网关调用、构建和浏览器入口 |
 
 未列出的版本可以直接加载，但尚未验证。上述记录不替代桌面实机验收；若 DSH 删除公开接口或改变其语义，仍需更新兼容层，不能保证自动适配任意未来变更。
 
 `npm run test:compatibility` 在隔离目录测试上述两个版本；可用 `npm run test:compatibility -- 0.2.1-rc.3` 指定其他待验证版本，不受版本范围限制。测试不会修改当前 DSH 安装或用户 profile。测试中的模拟版本仅检查版本声明不会拦截加载，不代表已验证对应版本的实际接口。
 
-升级时，请通过 DSH 插件页安装新生成的 **`dsh-plugin-archside-0.1.9.tgz`**，按提示重启。仅修改本地源码不会更新已安装插件。
+升级时，请通过 DSH 插件页安装新生成的 **`dsh-plugin-archside-0.1.10.tgz`**，按提示重启。仅修改本地源码不会更新已安装插件。
 
 ## 效果展示
 
@@ -79,9 +79,11 @@ ArchSide 是面向 **DeepSeek Harness** 的通用项目架构侧栏插件。左�
 
 </details>
 
-插件页也支持 npm 包名和 Git 地址。GitHub 上传包包含本次源码对应的完整 `dist/`，请一并上传并覆盖仓库中的旧构建；只更新 `package.json` 或源码会造成版本号已更新、实际仍运行旧程序。`prepare` 会在支持安装脚本的 Git 安装或本地 `npm ci` 时重新构建；宿主禁用安装脚本时应使用仓库已附带的完整构建或 Release `.tgz`。使用 npm 包名需要先发布到 npm；仓库提供 Release 安装包后，可直接使用其下载地址。
+插件页也支持 npm 包名和 Git 地址。GitHub 上传包包含本次源码对应的完整 `dist/`，请一并上传并覆盖仓库中的旧构建；只更新 `package.json` 或源码会造成版本号已更新、实际仍运行旧程序。插件不声明 `prepare`、安装或打包生命周期构建脚本，直接使用已附带的构建，避免 Git 安装触发 pnpm 的 `ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED`。无需为本插件放宽 DSH 的 `allowBuilds` 配置。使用 npm 包名需要先发布到 npm；仓库提供 Release 安装包后，可直接使用其下载地址。
 
-安装后，面板顶部应显示 **v0.1.9**。若仍显示旧版本或没有版本标识，保存任务并完全退出、重新打开 DSH；仍未更新时，通过本次 `.tgz` 的绝对路径重新安装。
+若安装时仍提示 `dsh-plugin-archside@0.1.9` 的构建白名单错误，说明来源仍是旧提交：将本次完整 GitHub 程序包上传后再安装，或直接使用本次 `.tgz` 的绝对路径。`UND_ERR_HEADERS_TIMEOUT` 是访问 GitHub 超时，属于另一个网络问题。
+
+安装后，面板顶部应显示 **v0.1.10**。若仍显示旧版本或没有版本标识，保存任务并完全退出、重新打开 DSH；仍未更新时，通过本次 `.tgz` 的绝对路径重新安装。
 
 ### 方式三：从源码手动安装
 
@@ -109,7 +111,7 @@ npm.cmd run install:desktop -- -DesktopDirectory 'C:\Path\To\DeepSeek Harness'
 
 ```powershell
 npm.cmd run pack:plugin
-& 'C:\Path\To\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd' plugin --profile desktop add 'C:\Path\To\ArchSide\dsh-plugin-archside-0.1.9.tgz'
+& 'C:\Path\To\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd' plugin --profile desktop add 'C:\Path\To\ArchSide\dsh-plugin-archside-0.1.10.tgz'
 ```
 
 移除时，完全退出 DSH 后执行：
@@ -196,7 +198,7 @@ npm.cmd run test:performance
 npm.cmd run pack:plugin
 ```
 
-`check` 包含类型检查、自动测试和构建；界面测试及打包入口验证使用本机 **Google Chrome**。界面测试在临时工作区运行，截图输出到 `artifacts/`。当前有 45 项自动测试，覆盖源码与构建一致性、8 色分配、逐章按跨章连接复用及导入导出稳定性、不限版本的加载声明、接口能力与降级、MD、稳定关系、布局、连线、拖动预览、存储及 DSH 适配。`test:colors` 在真实浏览器验证 8/9/10 章配色、旧五色元数据、两种总览、图例与所有颜色的箭头。`verify:package` 校验源码和构建哈希，再用实际宿主构建解析 10 个旧配色章节，并把结果交给实际客户端构建显示；可传入解压后的 TGZ 目录，验证实际交付包。`test:performance` 使用 120 个节点和 134 条业务关系，检查后台计算、拖动重算次数、平移缩放复用及交互帧耗时。
+`check` 包含类型检查、自动测试和构建；界面测试及打包入口验证使用本机 **Google Chrome**。界面测试在临时工作区运行，截图输出到 `artifacts/`。当前有 46 项自动测试，覆盖源码与构建一致性、8 色分配、逐章按跨章连接复用及导入导出稳定性、不限版本的加载声明、接口能力与降级、MD、稳定关系、布局、连线、拖动预览、存储及 DSH 适配。`test:colors` 在真实浏览器验证 8/9/10 章配色、旧五色元数据、两种总览、图例与所有颜色的箭头。`verify:package` 校验源码和构建哈希，再用实际宿主构建解析 10 个旧配色章节，并把结果交给实际客户端构建显示；可传入解压后的 TGZ 目录，验证实际交付包。`test:performance` 使用 120 个节点和 134 条业务关系，检查后台计算、拖动重算次数、平移缩放复用及交互帧耗时。
 
 | 目录 | 职责 |
 | --- | --- |

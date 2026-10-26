@@ -8,7 +8,7 @@
 
 ArchSide is a general-purpose project architecture sidebar plugin for **DeepSeek Harness**. It keeps native Agent chat on the left and an explorable architecture graph on the right. One `architecture.md` connects requirements, structural design, and implementation.
 
-Version **0.1.9** uses capability-based DSH integration without a host version gate. It supports existing codebases and projects still at the design stage, without depending on a particular domain or programming language.
+Version **0.1.10** uses capability-based DSH integration without a host version gate. It supports existing codebases and projects still at the design stage, without depending on a particular domain or programming language.
 
 ### DSH version compatibility
 
@@ -18,14 +18,14 @@ Integration uses public DSH / Cordis interfaces and checks available capabilitie
 
 | Tested DSH version | Automated validation |
 | --- | --- |
-| 0.2.1-rc.2 | Types, 45 tests, real host/client gateway calls, build and browser entry |
-| 0.2.1-rc.3 | Types, 45 tests, real host/client gateway calls, build and browser entry |
+| 0.2.1-rc.2 | Types, 46 tests, real host/client gateway calls, build and browser entry |
+| 0.2.1-rc.3 | Types, 46 tests, real host/client gateway calls, build and browser entry |
 
 Unlisted versions are allowed to load but have not been validated. These checks do not replace desktop acceptance testing. If DSH removes public interfaces or changes their semantics, the compatibility layer still needs updating; arbitrary future API changes cannot be handled automatically.
 
 `npm run test:compatibility` tests the two versions above in isolated directories. Pass another exact version with `npm run test:compatibility -- 0.2.1-rc.3`; the runner has no version range gate. It does not modify your DSH installation or profile. Synthetic versions used in admission tests verify only the absence of a version gate, not actual SDK compatibility.
 
-To upgrade, install **`dsh-plugin-archside-0.1.9.tgz`** through DSH's plugin page and restart if prompted. Editing source does not update an installed plugin.
+To upgrade, install **`dsh-plugin-archside-0.1.10.tgz`** through DSH's plugin page and restart if prompted. Editing source does not update an installed plugin.
 
 ## Preview
 
@@ -79,9 +79,11 @@ Complete the installation confirmations shown by DSH. If a restart is requested,
 
 </details>
 
-The page also accepts npm package names and Git URLs. The GitHub upload archive includes a matching `dist/` build: upload it along with the sources and replace any old build. Updating only the manifest or sources can leave an old program running under a newer version label. `prepare` rebuilds during Git installs that allow lifecycle scripts and local `npm ci`. If the host disables these scripts, use the complete included build or a Release `.tgz`. Installing by npm package name requires publishing to npm first.
+The page also accepts npm package names and Git URLs. The GitHub upload archive includes a matching `dist/` build: upload it along with the sources and replace any old build. Updating only the manifest or sources can leave an old program running under a newer version label. The plugin declares no prepare, install or pack lifecycle build hooks and uses the included build directly, avoiding pnpm's `ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED`. No relaxation of DSH's `allowBuilds` policy is needed for this plugin. Installing by npm package name requires publishing to npm first.
 
-After installation, the panel header should display **v0.1.9**. If it shows an older version or no version label, save your work and fully restart DSH; reinstall using this release's `.tgz` absolute path if needed.
+If installation still reports the build approval error for `dsh-plugin-archside@0.1.9`, it is using an older commit: upload this complete GitHub archive before retrying, or install this release's local `.tgz` by absolute path. `UND_ERR_HEADERS_TIMEOUT` is a separate GitHub network timeout.
+
+After installation, the panel header should display **v0.1.10**. If it shows an older version or no version label, save your work and fully restart DSH; reinstall using this release's `.tgz` absolute path if needed.
 
 ### Option 3: Install manually from source
 
@@ -109,7 +111,7 @@ An existing ArchSide-format `architecture.md` loads automatically. Otherwise, ch
 
 ```powershell
 npm.cmd run pack:plugin
-& 'C:\Path\To\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd' plugin --profile desktop add 'C:\Path\To\ArchSide\dsh-plugin-archside-0.1.9.tgz'
+& 'C:\Path\To\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd' plugin --profile desktop add 'C:\Path\To\ArchSide\dsh-plugin-archside-0.1.10.tgz'
 ```
 
 To remove the plugin, fully quit DSH first, then run:
@@ -194,7 +196,7 @@ npm.cmd run test:performance
 npm.cmd run pack:plugin
 ```
 
-`check` runs type checking, automated tests, and the build. UI tests and package-entry validation use locally installed **Google Chrome**. UI tests use a temporary workspace and save screenshots to `artifacts/`. There are currently 45 automated tests covering source/build integrity, eight-color assignment, sequential connectivity-aware reuse and color round trips, unrestricted version declarations, capability checks and graceful degradation, MD, stable relationships, layout, routing, drag previews, storage, and DSH integration. `test:colors` checks eight/nine/ten chapters, both overview modes, legacy five-color metadata, legends and every colored arrowhead in a real browser. `verify:package` checks source and build hashes, then feeds ten legacy-colored chapters through the actual host bundle and renders the resulting snapshot with the actual client bundle; an extracted TGZ directory can be passed as an argument. `test:performance` uses 120 nodes and 134 business relationships to check background computation, routing job counts during dragging, geometry reuse when panning/zooming, and interaction frame times.
+`check` runs type checking, automated tests, and the build. UI tests and package-entry validation use locally installed **Google Chrome**. UI tests use a temporary workspace and save screenshots to `artifacts/`. There are currently 46 automated tests covering source/build integrity, eight-color assignment, sequential connectivity-aware reuse and color round trips, unrestricted version declarations, capability checks and graceful degradation, MD, stable relationships, layout, routing, drag previews, storage, and DSH integration. `test:colors` checks eight/nine/ten chapters, both overview modes, legacy five-color metadata, legends and every colored arrowhead in a real browser. `verify:package` checks source and build hashes, then feeds ten legacy-colored chapters through the actual host bundle and renders the resulting snapshot with the actual client bundle; an extracted TGZ directory can be passed as an argument. `test:performance` uses 120 nodes and 134 business relationships to check background computation, routing job counts during dragging, geometry reuse when panning/zooming, and interaction frame times.
 
 | Directory | Responsibility |
 | --- | --- |
